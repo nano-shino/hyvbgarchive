@@ -1,0 +1,31 @@
+name: Check and Download Video
+
+on:
+  schedule:
+    - cron: "0 12 * * *"  # runs every day at 12:00 UTC
+  workflow_dispatch:      # allows manual runs
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run script
+        run: python hyv_launcher_bg_download.py
+
+      - name: Commit changes if new video
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --quiet && echo "No changes" || (git commit -m "Downloaded new video" && git push)
