@@ -55,12 +55,16 @@ def main():
     for game_id in GAME_IDS:
         current_urls = list(get_video_urls(game_id))
         last_urls = read_last_urls(game_id)
+        changed = False
 
         for url in current_urls:
             if url not in last_urls:
                 download_video(game_id, url)
+                changed = True
 
-        write_last_urls(game_id, current_urls + last_urls)
+        if changed:
+            write_last_urls(game_id, current_urls + last_urls)
+
     print("Check complete!")
 
 if __name__ == "__main__":
