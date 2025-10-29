@@ -1,3 +1,7 @@
+import re
+import shutil
+import subprocess
+
 import requests
 import json
 import os
@@ -35,13 +39,14 @@ def write_last_urls(game_id, urls):
         data[game_id] = {}
 
     data[game_id]["video_urls"] = urls
-    data[game_id]["checked_at"] = datetime.utcnow().isoformat()
+    data[game_id]["checked_at"] = datetime.now(UTC).isoformat()
 
     with open(STATE_FILE, "w") as f:
         json.dump(data, f)
 
 def download_video(game_id, url):
-    filename = os.path.join(SAVE_DIR, game_id, datetime.now(UTC).strftime("%Y%m%d") + "_" + os.path.basename(url))
+    date_str = (get_date(url) or datetime.now(UTC)).strftime("%Y%m%d")
+    filename = os.path.join(SAVE_DIR, game_id, date_str + "_" + os.path.basename(url))
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     print(f"Downloading new video: {url}")
     with requests.get(url, stream=True) as r:
@@ -49,7 +54,50 @@ def download_video(game_id, url):
         with open(filename, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
+
+    convert_mp4(filename)
     print(f"Saved: {filename}")
+
+def convert_mp4(filename):
+    if not filename.endswith(".webm"):
+        return
+
+    if shutil.which("ffmpeg") is None:
+        print("ffmpeg not found — skipping video conversion.")
+        return
+
+    try:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i", filename,
+                "-vcodec", "libx264",
+                "-acodec", "aac",
+                filename.replace(".webm", ".mp4"),
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,  # hide normal output
+            stderr=subprocess.STDOUT  # redirect errors to same stream
+        )
+        print("Video successfully converted to mp4.")
+    except subprocess.CalledProcessError:
+        print("ffmpeg failed to process the file.")
+
+def get_date(url):
+    pattern = r"/(\d{4})/(\d{2})/(\d{2})/"
+    match = re.search(pattern, url)
+    if match:
+        year, month, day = map(int, match.groups())
+
+        if 2020 <= year <= 2050:
+            try:
+                # Validate that it’s a real date (e.g. no Feb 30)
+                date_obj = datetime(year, month, day)
+                return date_obj
+            except ValueError:
+                pass
+
+    return None
 
 def main():
     for game_id in GAME_IDS:
