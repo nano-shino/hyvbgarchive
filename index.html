@@ -190,11 +190,11 @@
 
       for (const base in groups) {
         const formats = groups[base];
-        const videoFile = formats.find(f => ["mp4", "webm"].includes(f.ext.toLowerCase()));
+        const videoFile = formats.find(f => ["webm", "mp4"].includes(f.ext.toLowerCase()));
         if (!videoFile) continue; // skip non-video bases
 
         const thumbnailFile = formats.find(f => ["jpg", "jpeg", "png", "webp"].includes(f.ext.toLowerCase()));
-        const videoUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}/${videoFile.file.name}`;
+        const videoUrl = `https://cdn.jsdelivr.net/gh/${username}/${repo}/${path}/${videoFile.file.name}`;
         const thumbnailUrl = thumbnailFile
           ? `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}/${thumbnailFile.file.name}`
           : ""; // fallback if no thumbnail found
@@ -204,28 +204,19 @@
 
         const video = document.createElement("video");
         video.src = videoUrl;
-        video.preload = "metadata";
+        video.preload = "auto";
         video.poster = thumbnailUrl;
         video.controls = false;
-        video.muted = false;
-
-        // Click to play/pause
-        card.addEventListener("click", () => {
-          const allVideos = document.querySelectorAll("video");
-          allVideos.forEach(v => { if (v !== video) v.pause(); });
-          if (video.paused) {
-            video.play();
-            video.controls = true;
-          } else {
-            video.pause();
-            video.controls = false;
-          }
-        });
+        video.muted = true;         // browsers require muted autoplay
+        video.playsInline = true;   // important for mobile
+        video.controls = true;
 
         const downloads = document.createElement("div");
         downloads.className = "downloads";
 
         formats.forEach(({ ext, file }) => {
+          if (!["webm", "mp4"].includes(ext)) return;
+
           const link = document.createElement("a");
           link.href = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}/${file.name}`;
           link.download = file.name;
@@ -237,6 +228,24 @@
         card.appendChild(downloads);
         videosContainer.appendChild(card);
       }
+
+      const observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+              video.play().catch(() => {}); // ignore user gesture restrictions
+            } else {
+              video.pause();
+            }
+          });
+        },
+        {
+          threshold: 0.6 // play when at least 60% visible
+        }
+      );
+
+      document.querySelectorAll("video").forEach(video => observer.observe(video));
 
       if (Object.keys(groups).length === 0)
         videosContainer.textContent = "No video files found.";
