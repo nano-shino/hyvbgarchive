@@ -55,10 +55,10 @@ def download_video(game_id, url):
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-    convert_mp4(filename)
+    process_video(filename)
     print(f"Saved: {filename}")
 
-def convert_mp4(filename):
+def process_video(filename):
     if not filename.endswith(".webm"):
         return
 
@@ -77,13 +77,25 @@ def convert_mp4(filename):
                 "-pix_fmt", "yuv420p",
                 "-preset", "medium",
                 "-crf", "23",
+                "-y",
                 filename.replace(".webm", ".mp4"),
             ],
-            check=True,
-            stdout=subprocess.DEVNULL,  # hide normal output
-            stderr=subprocess.STDOUT  # redirect errors to same stream
+            check=True
         )
-        print("Video successfully converted to mp4.")
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i", filename,
+                "-vf", "thumbnail,scale=640:-1",
+                "-vframes", "1",
+                "-q:v", "2",
+                "-y",
+                filename.replace(".webm", ".jpg")
+            ],
+            check=True
+        )
+
+        print("Video successfully converted to mp4 and generated thumbnail.")
     except subprocess.CalledProcessError:
         print("ffmpeg failed to process the file.")
 
