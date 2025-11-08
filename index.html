@@ -1,157 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HYV Launcher Gallery</title>
-    <style>
-        body {
-          font-family: sans-serif;
-          background: #f5f6f7;
-          margin: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HYV Launcher Gallery</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f6f7;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
 
-        .selector {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          gap: 20px;
-          text-align: center;
-        }
+    .selector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 20px;
+      text-align: center;
+    }
 
-        .selector button {
-          padding: 14px 28px;
-          font-size: 1.2rem;
-          border: none;
-          border-radius: 10px;
-          background-color: black;
-          color: white;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.1s;
-          width: 260px;
-          max-width: 90vw;
-        }
+    .selector button {
+      padding: 14px 28px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      background-color: black;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      width: 260px;
+      max-width: 90vw;
+    }
 
-        .selector button:hover {
-          background-color: #292929;
-          transform: scale(1.03);
-        }
+    .selector button:hover {
+      background-color: #292929;
+      transform: scale(1.03);
+    }
 
-        .gallery {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 24px;
-          padding: 20px;
-          width: 100%;
-          max-width: 1400px;
-          box-sizing: border-box;
-        }
+    .gallery {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 20px;
+      width: 100%;
+      max-width: 1400px;
+      box-sizing: border-box;
+    }
 
-        .video-card {
-          width: 100%;
-          background: white;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          transition: transform 0.2s ease;
-        }
+    .video-card {
+      width: 100%;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
 
-        .video-card:hover {
-          transform: scale(1.02);
-        }
+    .video-card:hover {
+      transform: scale(1.02);
+    }
 
-        video {
-          width: 100%;
-          height: auto;
-          aspect-ratio: 16 / 9;
-          object-fit: cover;
-          background: #000;
-        }
+    video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #000;
+    }
 
-        .downloads {
-          display: flex;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 8px;
-          padding: 10px;
-        }
+    .downloads {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px;
+    }
 
-        .downloads a {
-          text-decoration: none;
-          color: #007bff;
-          font-weight: 600;
-          padding: 6px 10px;
-          border-radius: 6px;
-          background: #eef4ff;
-          transition: background 0.2s;
-        }
+    .downloads a {
+      text-decoration: none;
+      color: #007bff;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #eef4ff;
+      transition: background 0.2s;
+    }
 
-        .downloads a:hover {
-          background: #dce8ff;
-        }
+    .downloads a:hover {
+      background: #dce8ff;
+    }
 
-        h2 {
-          text-align: center;
-          margin-bottom: 20px;
-        }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-        /* ✅ Responsive Adjustments */
-        @media (max-width: 768px) {
-          body {
-            padding: 10px;
-          }
+    /* ✅ Responsive Adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
 
-          .selector {
-            height: auto;
-            margin-top: 40px;
-          }
+      .selector {
+        height: auto;
+        margin-top: 40px;
+      }
 
-          .selector button {
-            font-size: 1rem;
-            padding: 12px 20px;
-          }
+      .selector button {
+        font-size: 1rem;
+        padding: 12px 20px;
+      }
 
-          .video-card {
-            border-radius: 10px;
-          }
+      .video-card {
+        border-radius: 10px;
+      }
 
-          .downloads {
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 6px;
-          }
-        }
+      .downloads {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+    }
 
-        @media (max-width: 480px) {
-          .selector button {
-            width: 100%;
-            font-size: 1rem;
-          }
+    @media (max-width: 480px) {
+      .selector button {
+        width: 100%;
+        font-size: 1rem;
+      }
 
-          h2 {
-            font-size: 1.3rem;
-          }
+      h2 {
+        font-size: 1.3rem;
+      }
 
-          .downloads a {
-            font-size: 0.9rem;
-            padding: 5px 8px;
-          }
-        }
-    </style>
+      .downloads a {
+        font-size: 0.9rem;
+        padding: 5px 8px;
+      }
+    }
+  </style>
 
 </head>
 <body>
 <div id="selector" class="selector">
-    <h2>Select Game</h2>
-    <button onclick="selectGame('archive/gopR6Cufr3', 'Genshin Impact')">Genshin Impact</button>
-    <button onclick="selectGame('archive/U5hbdsT9W7', 'Zenless Zone Zero')">Zenless Zone Zero</button>
+  <h2>Select Game</h2>
+  <button onclick="selectGame('archive/gopR6Cufr3', 'Genshin Impact')">Genshin Impact</button>
+  <button onclick="selectGame('archive/U5hbdsT9W7', 'Zenless Zone Zero')">Zenless Zone Zero</button>
+  <button onclick="selectGame('archive/4ziysqXOQ8', 'Honkai Star Rail')">Honkai Star Rail</button>
 </div>
 
 <div id="gallery" class="gallery" style="display:none;">
@@ -209,8 +210,8 @@
         video.controls = false;
         video.muted = true;         // browsers require muted autoplay
         video.playsInline = true;   // important for mobile
-        video.controls = true;
         video.loop = true;
+        video.controls = false;
 
         const downloads = document.createElement("div");
         downloads.className = "downloads";
@@ -234,8 +235,20 @@
         entries => {
           entries.forEach(entry => {
             const video = entry.target;
+
             if (entry.isIntersecting) {
-              video.play().catch(() => {}); // ignore user gesture restrictions
+              // Wait for video to be fully loaded before playing
+              if (video.readyState >= 4) {
+                // 4 = HAVE_ENOUGH_DATA (fully loaded)
+                video.play().catch(() => {});
+              } else {
+                // Wait until video is fully buffered
+                const onCanPlayThrough = () => {
+                  video.play().catch(() => {});
+                  video.removeEventListener("canplaythrough", onCanPlayThrough);
+                };
+                video.addEventListener("canplaythrough", onCanPlayThrough);
+              }
             } else {
               video.pause();
             }
@@ -255,6 +268,23 @@
       console.error(err);
     }
   }
+
+  document.addEventListener("click", e => {
+    if (e.target.tagName === "VIDEO") {
+      const video = e.target;
+
+      // Toggle controls on single tap or click
+      video.controls = !video.controls;
+
+      // Optional: auto-hide controls after a few seconds
+      if (video.controls) {
+        clearTimeout(video._hideControlsTimeout);
+        video._hideControlsTimeout = setTimeout(() => {
+          video.controls = false;
+        }, 4000); // hide after 4 seconds
+      }
+    }
+  });
 </script>
 </body>
 </html>
