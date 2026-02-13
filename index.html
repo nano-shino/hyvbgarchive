@@ -102,7 +102,6 @@
       margin-bottom: 20px;
     }
 
-    /* ✅ Responsive Adjustments */
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -145,30 +144,39 @@
       }
     }
   </style>
-
 </head>
 <body>
 <div id="selector" class="selector">
   <h2>Select Game</h2>
-  <button onclick="selectGame('archive/gopR6Cufr3', 'Genshin Impact')">Genshin Impact</button>
-  <button onclick="selectGame('archive/U5hbdsT9W7', 'Zenless Zone Zero')">Zenless Zone Zero</button>
-  <button onclick="selectGame('archive/4ziysqXOQ8', 'Honkai Star Rail')">Honkai Star Rail</button>
+  <button onclick="location.hash='archive/gopR6Cufr3'">Genshin Impact</button>
+  <button onclick="location.hash='archive/U5hbdsT9W7'">Zenless Zone Zero</button>
+  <button onclick="location.hash='archive/4ziysqXOQ8'">Honkai Star Rail</button>
+  <button onclick="location.hash='archive/5TIVvvcwtM'">Honkai Impact 3rd</button>
 </div>
 
-<div id="gallery" class="gallery" style="display:none;">
-</div>
+<div id="gallery" class="gallery" style="display:none;"></div>
 
 <script>
   const username = "nano-shino";
   const repo = "hyvbgarchive";
   const branch = "master";
 
-  async function selectGame(path, label) {
-    // Hide selector, show gallery
-    document.getElementById("selector").style.display = "none";
-    document.getElementById("gallery").style.display = "flex";
-
+  async function handleRoute() {
+    const path = window.location.hash.slice(1); // Get path from #
+    const selector = document.getElementById("selector");
     const videosContainer = document.getElementById("gallery");
+
+    if (!path) {
+      // Show selector if no hash (Home)
+      selector.style.display = "flex";
+      videosContainer.style.display = "none";
+      videosContainer.innerHTML = "";
+      return;
+    }
+
+    // Show gallery
+    selector.style.display = "none";
+    videosContainer.style.display = "flex";
     videosContainer.textContent = "Loading videos...";
 
     const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}?ref=${branch}`;
@@ -177,9 +185,8 @@
       const res = await fetch(apiUrl);
       const files = await res.json();
 
-      // Group by base filename
       const groups = {};
-      files.forEach(file => {
+      files.toReversed().forEach(file => {
         const match = file.name.match(/^(.*)\.([^.]+)$/);
         if (!match) return;
         const [_, base, ext] = match;
@@ -268,6 +275,10 @@
       console.error(err);
     }
   }
+
+  // Listen for back/forward navigation and initial load
+  window.addEventListener("hashchange", handleRoute);
+  window.addEventListener("load", handleRoute);
 
   document.addEventListener("click", e => {
     if (e.target.tagName === "VIDEO") {

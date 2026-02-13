@@ -1,3 +1,4 @@
+import pathlib
 import re
 import shutil
 import subprocess
@@ -6,21 +7,28 @@ import requests
 import json
 import os
 from datetime import datetime, UTC
+from urllib.parse import urlparse
 
 GAME_IDS = ["4ziysqXOQ8", "gopR6Cufr3", "U5hbdsT9W7"]
-JSON_URL = "https://sg-hyp-api.hoyoverse.com/hyp/hyp-connect/api/getAllGameBasicInfo?launcher_id=VYTpXlbWo8&language=en-us&game_id="
+JSON_URL = "https://sg-hyp-api.hoyoverse.com/hyp/hyp-connect/api/getAllGameBasicInfo?launcher_id=VYTpXlbWo8&language=en-us"
 SAVE_DIR = "archive"
 STATE_FILE = "last_check.json"
+EXCLUDED_GAME_IDS = {
+    "bxPTXSET5t", "g0mMIvshDb", "uxB4MC7nzC", "wkE5P5WsIf"  # other HK 3 regions
+}
 
 os.makedirs(SAVE_DIR, exist_ok=True)
 
-def get_video_urls(game_id):
-    data = requests.get(JSON_URL + game_id).json()
+def get_games_with_videos():
+    data = requests.get(JSON_URL).json()
     for game in data.get("data").get("game_info_list"):
+        game_id = game.get("game").get("id")
         for background in game.get("backgrounds"):
+            thumbnail = background.get("background").get("url")
             video_url = background.get("video").get("url")
+            theme = background.get("theme").get("url")
             if video_url:
-                yield video_url
+                yield game_id, video_url, thumbnail, theme
 
 def read_last_urls(game_id):
     if os.path.exists(STATE_FILE):
@@ -44,14 +52,25 @@ def write_last_urls(game_id, urls):
     with open(STATE_FILE, "w") as f:
         json.dump(data, f)
 
-def download_video(game_id, url):
-    date_str = (get_date(url) or datetime.now(UTC)).strftime("%Y%m%d")
-    filename = os.path.join(SAVE_DIR, game_id, date_str + "_" + os.path.basename(url))
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    print(f"Downloading new video: {url}")
-    with requests.get(url, stream=True) as r:
+def download_video(game_id, video_url, thumbnail_url):
+    print(f"game id: {game_id}")
+    date_str = (get_date(video_url) or datetime.now(UTC)).strftime("%Y%m%d")
+    filename = date_str + "_" + os.path.basename(video_url)
+    filepath = pathlib.Path(SAVE_DIR) / game_id / filename
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    print(f"Downloading new video: {video_url} to {filepath}")
+    with requests.get(video_url, stream=True) as r:
         r.raise_for_status()
-        with open(filename, "wb") as f:
+        with open(filepath, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+    thumbnail_extension = pathlib.Path(urlparse(thumbnail_url).path).suffix
+    filepath = filepath.with_suffix(thumbnail_extension)
+    print(f"Downloading thumbnail: {thumbnail_url} to {filepath}")
+    with requests.get(thumbnail_url, stream=True) as r:
+        r.raise_for_status()
+        with open(filepath, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
 
@@ -82,20 +101,8 @@ def process_video(filename):
             ],
             check=True
         )
-        subprocess.run(
-            [
-                "ffmpeg",
-                "-i", filename,
-                "-vf", "thumbnail,scale=640:-1",
-                "-vframes", "1",
-                "-q:v", "2",
-                "-y",
-                filename.replace(".webm", ".jpg")
-            ],
-            check=True
-        )
 
-        print("Video successfully converted to mp4 and generated thumbnail.")
+        print("Video successfully converted to mp4.")
     except subprocess.CalledProcessError:
         print("ffmpeg failed to process the file.")
 
@@ -116,18 +123,22 @@ def get_date(url):
     return None
 
 def main():
-    for game_id in GAME_IDS:
-        current_urls = list(get_video_urls(game_id))
-        last_urls = read_last_urls(game_id)
-        changed = False
+    video_data = list(get_games_with_videos())
+    for game_id, video_url, thumbnail, theme in video_data:
+        if game_id in EXCLUDED_GAME_IDS:
+            continue
 
-        for url in current_urls:
-            if url not in last_urls:
-                download_video(game_id, url)
-                changed = True
+        last_urls = read_last_urls(game_id)
+
+        if video_url in last_urls:
+            continue
+
+        download_video(game_id, video_url, thumbnail)
+
+        changed = True
 
         if changed:
-            write_last_urls(game_id, current_urls + last_urls)
+            write_last_urls(game_id, last_urls + [video_url])
 
     print("Check complete!")
 
